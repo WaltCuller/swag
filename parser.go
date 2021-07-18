@@ -846,6 +846,7 @@ type structField struct {
 	readOnly     bool
 	crossPkg     string
 	exampleValue interface{}
+	mockValue    string
 	maximum      *float64
 	minimum      *float64
 	maxLength    *int64
@@ -928,6 +929,18 @@ func (parser *Parser) parseStructField(file *ast.File, field *ast.Field) (map[st
 	schema.Example = structField.exampleValue
 	schema.Format = structField.formatType
 	schema.Extensions = structField.extensions
+
+	if structField.mockValue != "" {
+		type mockModel struct {
+			Mock string `json:"mock"`
+		}
+		var mockM mockModel
+		extraMap := make(map[string]interface{})
+		mockM.Mock = structField.mockValue
+		extraMap["mock"] = mockM
+		schema.ExtraProps = extraMap
+	}
+
 	eleSchema := schema
 	if structField.schemaType == "array" {
 		eleSchema = schema.Items.Schema
@@ -1034,6 +1047,10 @@ func (parser *Parser) parseFieldTag(field *ast.Field, types []string) (*structFi
 	jsonTag := structTag.Get("json")
 	// json:"name,string" or json:",string"
 	hasStringTag := strings.Contains(jsonTag, ",string")
+
+	if mockTag := structTag.Get("mock"); mockTag != "" {
+		structField.mockValue = mockTag
+	}
 
 	if exampleTag := structTag.Get("example"); exampleTag != "" {
 		if hasStringTag {
