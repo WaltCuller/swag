@@ -1,3 +1,5 @@
+env_files:
+  github_token: ~/Documents/github_token
 build:
   binary: swag-yapi
   main: cmd/swag/main.go
