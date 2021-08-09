@@ -151,7 +151,7 @@ func main() {
 		{
 			Name:    "upload",
 			Aliases: []string{"u"},
-			Usage:   "upload swagger.json to yapi",
+			Usage:   "Upload swagger.json to yapi",
 			Action:  Post,
 			Flags:   uploadFlags,
 		},
@@ -170,21 +170,21 @@ func initConfig(c *cli.Context) {
 		// Find home directory.
 		home, err := os.UserHomeDir()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Search config in home directory with name ".cobra" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".cobra")
+		viper.SetConfigType("toml")
+		viper.SetConfigName("yapi")
 	}
 
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		log.Fatal("Need define the correct config file")
 	}
-	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	log.Println("Using config file:", viper.ConfigFileUsed())
 }
 
 type config struct {
@@ -195,7 +195,7 @@ type config struct {
 	Server string `json:"server"`
 }
 
-// Post post swagger.json
+// Post upload swagger.json
 func Post(c *cli.Context) error {
 	initConfig(c)
 	config := config{
@@ -206,14 +206,9 @@ func Post(c *cli.Context) error {
 	token := viper.Get("swagger.token").(string)
 	filePath := viper.Get("swagger.file_path").(string)
 
-	fmt.Println("type: ", config.Type)
-	fmt.Println("path: ", path)
-	fmt.Println("token: ", token)
-	fmt.Println("filePath: ", filePath)
-
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Printf("read file[%s] failed err=%v", filePath, err)
+		log.Printf("read file[%s] failed err=%v", filePath, err)
 		return err
 	}
 	actualToken := config.Token
@@ -226,34 +221,34 @@ func Post(c *cli.Context) error {
 		"merge": {config.Merge},
 		"token": {actualToken},
 	}
-	fmt.Println(string(bytes))
+	log.Println(string(bytes))
 	client := &http.Client{}
 	uri := path + "/api/open/import_data"
 	req, err := http.NewRequest("POST", uri, strings.NewReader(values.Encode()))
 	if err != nil {
-		fmt.Printf("http.NewRequest failed err=%v", err)
+		log.Fatalf("http.NewRequest failed err=%v", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Close = true
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("client.Do failed err=%v", err)
+		log.Fatalf("client.Do failed err=%v", err)
 		return err
 	}
 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}(resp.Body)
 
 	result, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("read responde failed err=%v", err)
+		log.Fatalf("read responde failed err=%v", err)
 		return err
 	}
-	fmt.Println(string(result))
+	log.Println(string(result))
 	return nil
 }

@@ -43,9 +43,9 @@ server = "xxxxxx" # yapi server address
 file_path = "docs/swagger/swagger.json" # swagger.json file path
 ```
 
-6. After added comments and tags, run ```swag-yapi init``` like ```swag init``` in the project's root folder which contains the ```main.go``` file. This will parse your comments and generate the require files(```docs```folder and ```docs/docs.go```)
+5. After added comments and tags, run ```swag-yapi init``` like ```swag init``` in the project's root folder which contains the ```main.go``` file. This will parse your comments and generate the require files(```docs```folder and ```docs/docs.go```)
 
-7. use ```swag-yapi upload``` with option ```-c``` to get the config and upload swagger.json to your yapi server.
+6. use ```swag-yapi upload``` with option ```-c``` to get the config and upload swagger.json to your yapi server.
 
 ### Client help
 ```shell
